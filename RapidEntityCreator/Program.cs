@@ -11,7 +11,15 @@ namespace RapidEntityCreator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("ZioLib Class Creator v1.0");
+            string propertyName = string.Empty;
+            string propertyType = string.Empty;
+            string columnName = string.Empty;
+            string primaryKey = string.Empty;
+            string image = string.Empty;
+            var propertyList = new List<Property>();
+            bool isDone = false;
+
+            Console.WriteLine("RapidORM Class Creator v1.0");
             Console.WriteLine("Please answer prompts below to start.\n");
 
             Console.Write("DB Type(mysql/sqlserver): ");
@@ -25,16 +33,7 @@ namespace RapidEntityCreator
 
             Console.Write("Table Name: ");
             string tableName = Console.ReadLine();
-
-            string propertyName = string.Empty;
-            string propertyType = string.Empty;
-            string columnName = string.Empty;
-            string primaryKey = string.Empty;
-            string image = string.Empty;
-
-            var propertyList = new List<Property>();
-
-            bool isDone = false;
+          
             while (!isDone)
             {
                 Console.WriteLine("\n--------------------");
@@ -81,8 +80,10 @@ namespace RapidEntityCreator
                 propertyList);
         }
 
-        public static void CreateClass(string dbType, string userNamespace, string userClass, string tableName, IEnumerable<Property> propertList)
+        public static void CreateClass(string dbType, string userNamespace, string userClass, string tableName, 
+            IEnumerable<Property> propertList)
         {
+            StringBuilder content = new StringBuilder();
             string filePath = string.Format(@"{0}\{1}.cs", Environment.CurrentDirectory, userClass);
 
             try
@@ -91,106 +92,122 @@ namespace RapidEntityCreator
                 {
                     File.Delete(filePath);
                 }
-
-                // Create the file.
+                
                 using (FileStream fs = File.Create(filePath))
                 {
-                    string content = "using System;\n";
-                    content += "using System.Collections.Generic;\n";
-                    content += "using System.Linq;\n";
-                    content += "using System.Text;\n";
-                    content += "using System.Threading.Tasks;\n";
-                    content += "using ZioLib.Data;\n";
-                    content += "using ZioLib.Helpers;\n\n";
-                    content += string.Format("namespace {0}\n", userNamespace);
-                    content += "{\n";
-                    content += "\t[TableName(\"" + tableName + "\")]\n";
-                    content += string.Format("\tpublic class {0}\n", userClass);
-                    content += "\t{\n";
+                    content.Append("using System;\n");
+                    content.Append("using System.Collections.Generic;\n");
+                    content.Append("using System.Linq;\n");
+                    content.Append("using System.Text;\n");
+                    content.Append("using System.Threading.Tasks;\n");
+                    content.Append("using RapidORM.Data;\n");
+                    content.Append("using RapidORM.Helpers;\n\n");
+                    content.Append("using RapidORM.Attributes;\n\n");
+                    content.Append("using RapidORM.Interfaces;\n\n");
+                    content.Append("using RapidORM.Common;\n\n");
+
+                    //--- Depending on your DB, you can add the following ---
+                    //content.Append("using RapidORM.Client.MySQL;\n\n");
+                    //content.Append("using RapidORM.Client.SQL;\n\n");
+
+                    content.AppendFormat("namespace {0}\n", userNamespace);
+                    content.Append("{\n");
+                    content.AppendFormat("\t[TableName(\"{0}\")]\n", tableName);
+                    content.AppendFormat("\tpublic class {0}\n", userClass);
+                    content.Append("\t{\n");
 
                     int recordCount = 1;
 
-                    content += "\t\t#region Data Access Properties\n";
+                    content.Append("\t\t#region Data Access Properties\n");
                     foreach (var property in propertList)
                     {
                         if (property.IsPrimaryKey == "true")
-                        {
-                            content += "\t\t[IsPrimaryKey(" + property.IsPrimaryKey + ")]\n";
+                        {                            
+                            content.AppendFormat("\t\t[IsPrimaryKey({0})]\n", property.IsPrimaryKey);
                         }
 
                         if (property.IsImage == "true")
                         {
-                            content += "\t\t[IsImage(" + property.IsPrimaryKey + ")]\n";
+                            content.AppendFormat("\t\t[IsImage({0})]\n", property.IsPrimaryKey);
                         }
-
-                        content += "\t\t[ColumnName(\"" + property.ColumnName + "\")]\n";
-                        content += "\t\tpublic " + property.PropertyType + " " + property.PropertyName + " { get; set; }\n";
+                                                
+                        content.AppendFormat("\t\t[ColumnName(\"{0}\")]\n", property.ColumnName);                        
+                        content.AppendFormat("\t\tpublic {0} {1} { get; set; }\n", 
+                            property.PropertyType,
+                            property.PropertyName);
 
                         if (recordCount < propertList.Count())
-                        {
-                            content += "\n";
+                        {                            
+                            content.Append("\n");
                         }
 
                         recordCount++;
-                    }
-                    content += "\t\t#endregion\n\n";
+                    }                    
+                    content.Append("\t\t#endregion\n\n");
 
-                    //constructor                    
-                    content += string.Format("\t\tprivate IDBEntity<{0}> dbEntity = null;\n\n", userClass);
-                    content += "\t\t//Constructor\n";
-                    content += "\t\tpublic " + userClass + "()\n";
-                    content += "\t\t{\n";
-                    content += string.Format("\t\t\tdbEntity = new {0}<{1}>();\n", dbType, userClass);
-                    content += "\t\t}\n\n";
+                    //constructor                                        
+                    content.AppendFormat("\t\tprivate IDBEntity<{0}> dbEntity = null;\n\n", userClass);                    
+                    content.Append("\t\t//Constructor\n");                    
+                    content.AppendFormat("\t\tpublic {0}()\n", userClass);                    
+                    content.Append("\t\t{\n");                    
+                    content.AppendFormat("\t\t\tdbEntity = new {0}<{1}>();\n", dbType, userClass);                    
+                    content.Append("\t\t}\n\n");
 
-                    //data retrieval
-                    content += "\t\t//Required: Data Retrieval\n";
-                    content += "\t\tpublic " + userClass + "(Dictionary<string, object> args)\n";
-                    content += "\t\t{\n";
+                    //data retrieval                    
+                    content.Append("\t\t//Required: Data Retrieval\n");                    
+                    content.AppendFormat("\t\tpublic {0}(Dictionary<string, object> args)\n", userClass);                    
+                    content.Append("\t\t{\n");
 
                     foreach (var property in propertList)
-                    {
-                        content += "\t\t\t";
+                    {                        
+                        content.Append("\t\t\t");
                         switch (property.PropertyType)
                         {
-                            case "int":
-                                content += property.PropertyName + " = Convert.ToInt32(args[\"" + property.ColumnName + "\"].ToString());";
+                            case "int":                                
+                                content.AppendFormat("{0} = Convert.ToInt32(args[\"{1}\"].ToString());",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                            case "decimal":
-                                content += property.PropertyName + " = Convert.ToDecimal(args[\"" + property.ColumnName + "\"].ToString());";
+                            case "decimal":                                
+                                content.AppendFormat("{0} = Convert.ToDecimal(args[\"{1}\"].ToString());",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                            case "double":
-                                content += property.PropertyName + " = Convert.ToDouble(args[\"" + property.ColumnName + "\"].ToString());";
+                            case "double":                                
+                                content.AppendFormat("{0} = Convert.ToDouble(args[\"1\"].ToString());",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                            case "datetime":
-                                content += property.PropertyName + " = Convert.ToDateTime(args[\"" + property.ColumnName + "\"].ToString());";
+                            case "datetime":                                
+                                content.AppendFormat("{0} = Convert.ToDateTime(args[\"{1}\"].ToString());",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                            case "char":
-                                content += property.PropertyName + " = Convert.ToChar(args[\"" + property.ColumnName + "\"].ToString());";
+                            case "char":                                
+                                content.AppendFormat("{0} = Convert.ToChar(args[\"{1}\"].ToString());",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                            case "byte":
-                                content += property.PropertyName + " = Convert.ToByte(args[\"" + property.ColumnName + "\"].ToString());";
+                            case "byte":                                
+                                content.AppendFormat("{0} = Convert.ToByte(args[\"{1}\"].ToString());",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                            default:
-                                content += property.PropertyName + " = args[\"" + property.ColumnName + "\"].ToString();";
+                            default:                                
+                                content.AppendFormat("{0} = args[\"{1}\"].ToString();",
+                                    property.PropertyName, property.ColumnName);
                                 break;
-                        }
-                        content += "\n";
+                        }                        
+                        content.Append("\n");
                     }
+                                        
+                    content.Append("\t\t}\n\n");
 
-                    content += "\t\t}\n\n";
+                    content.Append("\t\t#region Class Methods\n\n");                    
+                    content.Append("\t\t#endregion\n");
 
-                    content += "\t\t#region Class Methods\n\n";
-                    content += "\t\t#endregion\n";
+                    content.Append("\t}\n");                    
+                    content.Append("}");
 
-                    content += "\t}\n";
-                    content += "}";
-
-                    Byte[] info = new UTF8Encoding(true).GetBytes(content);
+                    Byte[] info = new UTF8Encoding(true).GetBytes(content.ToString());
                     fs.Write(info, 0, info.Length);
                 }
 
-                Console.WriteLine("\nEntity successfully created");
+                Console.WriteLine("\Model successfully created");
             }
             catch (Exception ex)
             {
