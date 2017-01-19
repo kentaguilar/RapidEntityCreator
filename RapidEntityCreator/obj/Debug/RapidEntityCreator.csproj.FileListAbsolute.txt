@@ -1,6 +1,0 @@
-E:\Kent Files\RapidEntityCreator\RapidEntityCreator\bin\Debug\RapidEntityCreator.exe.config
-E:\Kent Files\RapidEntityCreator\RapidEntityCreator\bin\Debug\RapidEntityCreator.exe
-E:\Kent Files\RapidEntityCreator\RapidEntityCreator\bin\Debug\RapidEntityCreator.pdb
-E:\Kent Files\RapidEntityCreator\RapidEntityCreator\obj\Debug\RapidEntityCreator.csprojResolveAssemblyReference.cache
-E:\Kent Files\RapidEntityCreator\RapidEntityCreator\obj\Debug\RapidEntityCreator.exe
-E:\Kent Files\RapidEntityCreator\RapidEntityCreator\obj\Debug\RapidEntityCreator.pdb
