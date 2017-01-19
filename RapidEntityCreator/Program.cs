@@ -24,7 +24,7 @@ namespace RapidEntityCreator
             var propertyList = new List<Property>();
             bool isDone = false;
 
-            Console.WriteLine("RapidORM Class Creator v1.0");
+            Console.WriteLine("RapidORM Class Creator v1.1");
             Console.WriteLine("Please answer prompts below to start.\n");
 
             Console.Write("DB Type(mysql/sql): ");
@@ -83,8 +83,6 @@ namespace RapidEntityCreator
                 userClass,
                 string.IsNullOrEmpty(tableName) ? userClass.ToLower() : tableName,
                 propertyList);
-
-            Console.Read();
         }
 
         protected static void CreateClass(string dbType, string userNamespace, 
