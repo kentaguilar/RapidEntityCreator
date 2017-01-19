@@ -8,7 +8,7 @@ Simply execute this program and automatically you'll have your formatted class m
 - You can run the program and respond to the displayed prompts. Choices are available on selected prompts to guide you. Also, a default value will be created should an "Enter" key is invoked.
 - The screen should look like this.
 
-<img src="http://deepmirage.com/git/rapidentitycreator.png" alt="RapidORM" width="400px"/>
+<img src="http://deepmirage.com/git/rapidentitycreator.png" alt="RapidORM" width="600px"/>
 
 - Once all the information is provided. A neatly organized class file will be generated on your projects execution folder or on the location you run the RapidEntityCreator program.
 - Please note that the newly created class is not instantly added on Visual Studio. You need to add it up. To do so, hit right-click on your project, then click on "Add > Existing Item" (Shift + Alt + A).
